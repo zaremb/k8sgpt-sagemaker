@@ -35,6 +35,7 @@ type SageMakerAIClient struct {
 	client   *sagemakerruntime.SageMakerRuntime
 	language string
 	model    string
+	endpoint string
 }
 
 type Generation struct {
@@ -56,6 +57,7 @@ func (c *SageMakerAIClient) Configure(config IAIConfig, language string) error {
 	// Create a new SageMaker runtime client
 	c.client = sagemakerruntime.New(sess)
 	c.model = config.GetModel()
+	c.endpoint = config.GetBaseURL()
 	return nil
 }
 
@@ -101,13 +103,10 @@ func (c *SageMakerAIClient) GetCompletion(ctx context.Context, prompt string, pr
 		return "", err
 	}
 
-	// Define the endpoint name
-	endpointName := "endpoint-T4PjjeNFdFpW"
-
 	// Create an input object
 	input := &sagemakerruntime.InvokeEndpointInput{
 		Body:             bytesData,
-		EndpointName:     aws.String(endpointName),
+		EndpointName:     aws.String(c.endpoint),
 		ContentType:      aws.String("application/json"), // Set the content type as per your model's requirements
 		Accept:           aws.String("application/json"), // Set the accept type as per your model's requirements
 		CustomAttributes: aws.String("accept_eula=true"),
