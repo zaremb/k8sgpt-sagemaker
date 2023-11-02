@@ -19,11 +19,12 @@ import (
 	"fmt"
 	"strings"
 
+	"encoding/json"
+	"log"
+
 	"github.com/fatih/color"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/cache"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
-	"encoding/json"
-	"log"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -36,6 +37,11 @@ type SageMakerAIClient struct {
 	model    string
 }
 
+type Generation struct {
+	Role    string `json:"role"`
+	Content string `json:"content"`
+}
+
 func (c *SageMakerAIClient) Configure(config IAIConfig, language string) error {
 	token := config.GetPassword()
 	c.language = language
@@ -46,7 +52,10 @@ func (c *SageMakerAIClient) Configure(config IAIConfig, language string) error {
 
 func (c *SageMakerAIClient) GetCompletion(ctx context.Context, prompt string, promptTmpl string) (string, error) {
 	// Create a completion request
-	// response := "I am a SageMaker response to the prompt: " + prompt
+
+	if len(promptTmpl) == 0 {
+		promptTmpl = PromptMap["default"]
+	}
 
 	// Create a new AWS session
 	sess := session.Must(session.NewSessionWithOptions(session.Options{
@@ -65,7 +74,7 @@ func (c *SageMakerAIClient) GetCompletion(ctx context.Context, prompt string, pr
 				},
 				map[string]interface{}{
 					"role":    "user",
-					"content": prompt,
+					"content": fmt.Sprintf(promptTmpl, c.language, prompt),
 				},
 			},
 		},
@@ -77,15 +86,14 @@ func (c *SageMakerAIClient) GetCompletion(ctx context.Context, prompt string, pr
 	}
 	// Convert data to []byte
 	bytesData, err := json.Marshal(data)
-	// if err != nil {
-	// 	fmt.Println("Error:", err)
-	// 	return
-	// }
+	if err != nil {
+		fmt.Println("Error:", err)
+		log.Fatal(err)
+		return "", err
+	}
 
-	// Print the []byte representation
-	// fmt.Println(string(bytesData))
 	// Define the endpoint name
-	endpointName := "endpoint-3T1RMjUTnDvW"
+	endpointName := "endpoint-Wg5SzX93VOZF"
 
 	// Create an input object
 	input := &sagemakerruntime.InvokeEndpointInput{
@@ -100,15 +108,23 @@ func (c *SageMakerAIClient) GetCompletion(ctx context.Context, prompt string, pr
 	result, err := svc.InvokeEndpoint(input)
 	if err != nil {
 		log.Fatal(err)
+		return "", err
 	}
 
-	// The response from the endpoint is available in result.Body
-	// You may need to deserialize the response based on your model's output format
+	// Define a slice of Generations
+	var generations []struct {
+		Generation Generation `json:"generation"`
+	}
 
-    //fmt.Printf("Response: %s\n", string(result.Body))
+	err = json.Unmarshal([]byte(string(result.Body)), &generations)
+	if err != nil {
+		log.Fatal(err)
+		return "", err
+	}
 
-
-	return string(result.Body), nil
+	// Access the content
+	content := generations[0].Generation.Content
+	return content, nil
 }
 
 func (a *SageMakerAIClient) Parse(ctx context.Context, prompt []string, cache cache.ICache, promptTmpl string) (string, error) {
