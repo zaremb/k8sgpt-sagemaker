@@ -49,7 +49,9 @@ go build .
 
 ```bash
 ./k8sgpt auth list
-./k8sgpt auth add --backend amazonsagemaker
+
+#Add amazonsagemaker provider with region and endpoint as a baseurl
+./k8sgpt auth add --backend amazonsagemaker --providerRegion eu-west-1 --baseurl endpoint-T4PjjeNFdFpW 
   //  type random string as a key
  
   // Make amazonsagemaker as a default provider
