@@ -32,7 +32,7 @@ import (
 )
 
 type SageMakerAIClient struct {
-	client   string
+	client   *sagemakerruntime.SageMakerRuntime
 	language string
 	model    string
 }
@@ -42,12 +42,29 @@ type Generation struct {
 	Content string `json:"content"`
 }
 
+const AMAZONSAGEMAKER_DEFAULT_REGION = "us-east-1"
+
 func (c *SageMakerAIClient) Configure(config IAIConfig, language string) error {
-	token := config.GetPassword()
+
+	// Create a new AWS session
+	sess := session.Must(session.NewSessionWithOptions(session.Options{
+		Config:            aws.Config{Region: aws.String(SGGetRegionOrDefault(config.GetProviderRegion()))},
+		SharedConfigState: session.SharedConfigEnable,
+	}))
+
 	c.language = language
-	c.client = fmt.Sprintf("I am a SageMaker client with the token %s ", token)
+	// Create a new SageMaker runtime client
+	c.client = sagemakerruntime.New(sess)
 	c.model = config.GetModel()
 	return nil
+}
+
+func SGGetRegionOrDefault(region string) string {
+
+	if region != "" {
+		return region
+	}
+	return AMAZONSAGEMAKER_DEFAULT_REGION
 }
 
 func (c *SageMakerAIClient) GetCompletion(ctx context.Context, prompt string, promptTmpl string) (string, error) {
@@ -56,14 +73,6 @@ func (c *SageMakerAIClient) GetCompletion(ctx context.Context, prompt string, pr
 	if len(promptTmpl) == 0 {
 		promptTmpl = PromptMap["default"]
 	}
-
-	// Create a new AWS session
-	sess := session.Must(session.NewSessionWithOptions(session.Options{
-		Config:            aws.Config{Region: aws.String("eu-west-1")},
-		SharedConfigState: session.SharedConfigEnable,
-	}))
-	// Create a new SageMaker runtime client
-	svc := sagemakerruntime.New(sess)
 
 	data := map[string]interface{}{
 		"inputs": []interface{}{
@@ -80,8 +89,8 @@ func (c *SageMakerAIClient) GetCompletion(ctx context.Context, prompt string, pr
 		},
 		"parameters": map[string]interface{}{
 			"max_new_tokens": 256,
-			"top_p":         0.9,
-			"temperature":   0.6,
+			"top_p":          0.9,
+			"temperature":    0.6,
 		},
 	}
 	// Convert data to []byte
@@ -93,19 +102,19 @@ func (c *SageMakerAIClient) GetCompletion(ctx context.Context, prompt string, pr
 	}
 
 	// Define the endpoint name
-	endpointName := "endpoint-Wg5SzX93VOZF"
+	endpointName := "endpoint-T4PjjeNFdFpW"
 
 	// Create an input object
 	input := &sagemakerruntime.InvokeEndpointInput{
-		Body:           bytesData,
-		EndpointName:   aws.String(endpointName),
-		ContentType:    aws.String("application/json"), // Set the content type as per your model's requirements
-		Accept:         aws.String("application/json"), // Set the accept type as per your model's requirements
+		Body:             bytesData,
+		EndpointName:     aws.String(endpointName),
+		ContentType:      aws.String("application/json"), // Set the content type as per your model's requirements
+		Accept:           aws.String("application/json"), // Set the accept type as per your model's requirements
 		CustomAttributes: aws.String("accept_eula=true"),
 	}
 
 	// Call the InvokeEndpoint function
-	result, err := svc.InvokeEndpoint(input)
+	result, err := c.client.InvokeEndpoint(input)
 	if err != nil {
 		log.Fatal(err)
 		return "", err
