@@ -73,7 +73,7 @@ func (c *SageMakerAIClient) GetCompletion(ctx context.Context, prompt string, pr
 	if len(promptTmpl) == 0 {
 		promptTmpl = PromptMap["default"]
 	}
-
+	// TODO: extract all paramseters to config
 	data := map[string]interface{}{
 		"inputs": []interface{}{
 			[]interface{}{

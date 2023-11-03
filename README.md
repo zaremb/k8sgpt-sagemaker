@@ -405,8 +405,10 @@ k8sgpt analyze -e -b amazonbedrock
 You need to create SageMaker instance,
 Example how to do it is available in this repo [llm-sagemaker-jumpstart-cdk](https://github.com/zaremb/llm-sagemaker-jumpstart-cdk)
 
+Add backend amazonsagemaker with its endpoint Name and in which AWS region it's created.
+
 ```bash
-k8sgpt auth add --backend amazonsagemaker --providerRegion eu-west-1 --baseurl endpoint-T4PjjeNFdFpW
+k8sgpt auth add --backend amazonsagemaker --providerRegion eu-west-1 --endpointname endpoint-xxxxxxxxxx
 ```
 
 TODO: Currently access key will be requested in the CLI, you can enter anything into this.
