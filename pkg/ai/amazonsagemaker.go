@@ -50,21 +50,11 @@ type Generation struct {
 	Content string `json:"content"`
 }
 
-const AMAZONSAGEMAKER_DEFAULT_REGION = "us-east-1"
-
-func SGGetRegionOrDefault(region string) string {
-
-	if region != "" {
-		return region
-	}
-	return AMAZONSAGEMAKER_DEFAULT_REGION
-}
-
 func (c *SageMakerAIClient) Configure(config IAIConfig, language string) error {
 
 	// Create a new AWS session
 	sess := session.Must(session.NewSessionWithOptions(session.Options{
-		Config:            aws.Config{Region: aws.String(SGGetRegionOrDefault(config.GetProviderRegion()))},
+		Config:            aws.Config{Region: aws.String(config.GetProviderRegion())},
 		SharedConfigState: session.SharedConfigEnable,
 	}))
 
@@ -72,7 +62,7 @@ func (c *SageMakerAIClient) Configure(config IAIConfig, language string) error {
 	// Create a new SageMaker runtime client
 	c.client = sagemakerruntime.New(sess)
 	c.model = config.GetModel()
-	c.endpoint = config.GetBaseURL()
+	c.endpoint = config.GetEndpointName()
 	c.temperature = config.GetTemperature()
 	return nil
 }
