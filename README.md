@@ -401,6 +401,40 @@ k8sgpt analyze -e -b amazonbedrock
 </details>
 
 <details>
+<summary>Amazon SageMaker provider</summary>
+
+<em>Prerequisites</em>
+You need to create SageMaker instance,
+Example how to do it is available in this repo https://github.com/zaremb/k8sgpt-sagemaker-backend
+
+```
+k8sgpt auth add --backend amazonsagemaker --providerRegion eu-west-1 --baseurl endpoint-T4PjjeNFdFpW
+```
+
+TODO: Currently access key will be requested in the CLI, you can enter anything into this.
+
+#### Usage
+
+```
+./k8sgpt analyze -e -b amazonsagemaker
+ 100% |█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| (1/1, 14 it/min)
+AI Provider: amazonsagemaker
+
+0 default/nginx(nginx)
+- Error: Back-off pulling image "nginxx"
+ Error: Back-off pulling image "nginxx"
+
+Solution:
+
+1. Check if the image exists in the registry by running `docker image ls nginxx`.
+2. If the image is not found, try pulling it by running `docker pull nginxx`.
+3. If the image is still not available, check if there are any network issues by running `docker network inspect` and `docker network list`.
+4. If the issue persists, try restarting the Docker daemon by running `sudo service docker restart`.
+```
+
+</details>
+
+<details>
 <summary>Setting a new default AI provider</summary>
 
 There may be scenarios where you wish to have K8sGPT plugged into several default AI providers. In this case you may wish to use one as a new default, other than OpenAI which is the project default.
@@ -418,6 +452,7 @@ Unused:
 > localai
 > noopai
 > amazonbedrock
+> amazonsagemaker
 > cohere
 
 ```
