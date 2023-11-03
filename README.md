@@ -374,15 +374,13 @@ As illustrated below, you will need to enable this in the [AWS Console](https://
 
 In addition to this you will need to set the follow local environmental variables:
 
-
 ```
 - AWS_ACCESS_KEY
 - AWS_SECRET_ACCESS_KEY
 - AWS_DEFAULT_REGION
 ```
 
-
-```
+```bash
 k8sgpt auth add --backend amazonbedrock --model anthropic.claude-v2
 ```
 
@@ -405,9 +403,9 @@ k8sgpt analyze -e -b amazonbedrock
 
 <em>Prerequisites</em>
 You need to create SageMaker instance,
-Example how to do it is available in this repo https://github.com/zaremb/k8sgpt-sagemaker-backend
+Example how to do it is available in this repo [llm-sagemaker-jumpstart-cdk](https://github.com/zaremb/llm-sagemaker-jumpstart-cdk)
 
-```
+```bash
 k8sgpt auth add --backend amazonsagemaker --providerRegion eu-west-1 --baseurl endpoint-T4PjjeNFdFpW
 ```
 
@@ -415,7 +413,7 @@ TODO: Currently access key will be requested in the CLI, you can enter anything 
 
 #### Usage
 
-```
+```bash
 ./k8sgpt analyze -e -b amazonsagemaker
  100% |█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| (1/1, 14 it/min)
 AI Provider: amazonsagemaker
