@@ -32,11 +32,18 @@ import (
 )
 
 type SageMakerAIClient struct {
-	client   *sagemakerruntime.SageMakerRuntime
-	language string
-	model    string
-	endpoint string
+	client      *sagemakerruntime.SageMakerRuntime
+	language    string
+	model       string
+	temperature float32
+	endpoint    string
 }
+
+const (
+	// SageMaker completion parameters
+	maxNewTokens = 256
+	top_P        = 0.9
+)
 
 type Generation struct {
 	Role    string `json:"role"`
@@ -44,6 +51,14 @@ type Generation struct {
 }
 
 const AMAZONSAGEMAKER_DEFAULT_REGION = "us-east-1"
+
+func SGGetRegionOrDefault(region string) string {
+
+	if region != "" {
+		return region
+	}
+	return AMAZONSAGEMAKER_DEFAULT_REGION
+}
 
 func (c *SageMakerAIClient) Configure(config IAIConfig, language string) error {
 
@@ -58,15 +73,8 @@ func (c *SageMakerAIClient) Configure(config IAIConfig, language string) error {
 	c.client = sagemakerruntime.New(sess)
 	c.model = config.GetModel()
 	c.endpoint = config.GetBaseURL()
+	c.temperature = config.GetTemperature()
 	return nil
-}
-
-func SGGetRegionOrDefault(region string) string {
-
-	if region != "" {
-		return region
-	}
-	return AMAZONSAGEMAKER_DEFAULT_REGION
 }
 
 func (c *SageMakerAIClient) GetCompletion(ctx context.Context, prompt string, promptTmpl string) (string, error) {
@@ -90,9 +98,9 @@ func (c *SageMakerAIClient) GetCompletion(ctx context.Context, prompt string, pr
 			},
 		},
 		"parameters": map[string]interface{}{
-			"max_new_tokens": 256,
-			"top_p":          0.9,
-			"temperature":    0.6,
+			"max_new_tokens": maxNewTokens,
+			"top_p":          top_P,
+			"temperature":    c.temperature,
 		},
 	}
 	// Convert data to []byte
