@@ -374,15 +374,13 @@ As illustrated below, you will need to enable this in the [AWS Console](https://
 
 In addition to this you will need to set the follow local environmental variables:
 
-
 ```
 - AWS_ACCESS_KEY
 - AWS_SECRET_ACCESS_KEY
 - AWS_DEFAULT_REGION
 ```
 
-
-```
+```bash
 k8sgpt auth add --backend amazonbedrock --model anthropic.claude-v2
 ```
 
@@ -398,6 +396,42 @@ k8sgpt analyze -e -b amazonbedrock
 
  You're right, I don't have enough context to determine if a StatefulSet is correctly configured to use a non-existent service. A StatefulSet manages Pods with persistent storage, and the Pods are created from the same spec. The service name referenced in the StatefulSet configuration would need to match an existing Kubernetes service for the Pods to connect to. Without more details on the specific StatefulSet and environment, I can't confirm whether the configuration is valid or not.
 ```
+</details>
+
+<details>
+<summary>Amazon SageMaker provider</summary>
+
+<em>Prerequisites</em>
+You need to create SageMaker instance,
+Example how to do it is available in this repo [llm-sagemaker-jumpstart-cdk](https://github.com/zaremb/llm-sagemaker-jumpstart-cdk)
+
+Add backend amazonsagemaker with its endpoint Name and in which AWS region it's created.
+
+```bash
+k8sgpt auth add --backend amazonsagemaker --providerRegion eu-west-1 --endpointname endpoint-xxxxxxxxxx
+```
+
+TODO: Currently access key will be requested in the CLI, you can enter anything into this.
+
+#### Usage
+
+```bash
+./k8sgpt analyze -e -b amazonsagemaker
+ 100% |█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| (1/1, 14 it/min)
+AI Provider: amazonsagemaker
+
+0 default/nginx(nginx)
+- Error: Back-off pulling image "nginxx"
+ Error: Back-off pulling image "nginxx"
+
+Solution:
+
+1. Check if the image exists in the registry by running `docker image ls nginxx`.
+2. If the image is not found, try pulling it by running `docker pull nginxx`.
+3. If the image is still not available, check if there are any network issues by running `docker network inspect` and `docker network list`.
+4. If the issue persists, try restarting the Docker daemon by running `sudo service docker restart`.
+```
+
 </details>
 
 <details>
@@ -418,6 +452,7 @@ Unused:
 > localai
 > noopai
 > amazonbedrock
+> amazonsagemaker
 > cohere
 
 ```
